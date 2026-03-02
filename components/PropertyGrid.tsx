@@ -84,7 +84,7 @@ export function PropertyGrid({
       aria-label="Lista de propiedades"
     >
       {properties.map((property) => (
-        <div key={property._id} role="listitem">
+        <div key={property.id} role="listitem">
           <PropertyCard property={property} />
         </div>
       ))}

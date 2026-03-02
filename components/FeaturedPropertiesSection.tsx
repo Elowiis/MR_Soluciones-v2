@@ -1,9 +1,8 @@
-import { client } from '@/sanity/lib/client'
-import { getFeaturedProperties } from '@/sanity/lib/queries'
+import { getFeaturedProperties } from '@/lib/properties'
 import { PropertyGrid } from './PropertyGrid'
 
 export async function FeaturedPropertiesSection() {
-  const properties = await client.fetch(getFeaturedProperties)
+  const properties = await getFeaturedProperties()
 
   if (properties.length === 0) {
     return null
@@ -23,12 +22,11 @@ export async function FeaturedPropertiesSection() {
             Selección exclusiva de propiedades con las mejores ubicaciones y características
           </p>
         </div>
-        <PropertyGrid 
-          properties={properties} 
+        <PropertyGrid
+          properties={properties}
           emptyMessage="No hay propiedades destacadas disponibles en este momento"
         />
       </div>
     </section>
   )
 }
-

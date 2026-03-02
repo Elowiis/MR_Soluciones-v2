@@ -174,7 +174,7 @@ export function HeroSection() {
 
       {/* WhatsApp Floating Button */}
       <motion.a
-        href="https://wa.me/573000000000"
+        href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`}
         target="_blank"
         rel="noopener noreferrer"
         whileHover={{ scale: 1.1 }}

@@ -67,10 +67,9 @@ export default function LoginPage() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="admin@inmobiliario.com"
+                placeholder="tu@email.com"
                 required
               />
-              <p className="text-xs text-muted-foreground mt-1">Demo: admin@inmobiliario.com</p>
             </div>
 
             <div>
@@ -83,7 +82,6 @@ export default function LoginPage() {
                 placeholder="Ingresa tu contraseña"
                 required
               />
-              <p className="text-xs text-muted-foreground mt-1">Demo: password123</p>
             </div>
 
             <Button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground">
@@ -91,11 +89,6 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <p className="text-sm text-foreground font-medium mb-2">Credenciales de prueba:</p>
-            <p className="text-xs text-muted-foreground">Email: admin@inmobiliario.com</p>
-            <p className="text-xs text-muted-foreground">Contraseña: password123</p>
-          </div>
         </div>
       </div>
     </div>

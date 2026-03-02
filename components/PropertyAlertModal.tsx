@@ -93,7 +93,7 @@ export function PropertyAlertModal({ isOpen, onClose, searchCriteria }: Property
       }
 
       const response = await fetch(
-        'https://primary-production-a806.up.railway.app/webhook/655bde93-bd7f-4bff-a9cb-87c7529530d5',
+        process.env.NEXT_PUBLIC_WEBHOOK_ALERT_URL!,
         {
           method: 'POST',
           headers: {
@@ -120,7 +120,6 @@ export function PropertyAlertModal({ isOpen, onClose, searchCriteria }: Property
         throw new Error('Error en la respuesta del servidor')
       }
     } catch (error) {
-      console.error('Error al enviar:', error)
       toast({
         title: '❌ Error',
         description: 'Ocurrió un error al enviar la solicitud. Por favor, intenta de nuevo.',

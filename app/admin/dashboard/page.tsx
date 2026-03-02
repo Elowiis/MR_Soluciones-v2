@@ -22,7 +22,9 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts"
-import { TrendingUp, Users, Target, Calendar } from "lucide-react"
+import { TrendingUp, Users, Target, Calendar, Building2, ArrowRight } from "lucide-react"
+import Link from "next/link"
+import { supabase } from "@/lib/supabase"
 
 interface Lead {
   id: string
@@ -48,9 +50,18 @@ function DashboardContent() {
     revalidateOnReconnect: false,
   })
 
-  const [chartData, setChartData] = useState<any[]>([])
-  const [typeDistribution, setTypeDistribution] = useState<any[]>([])
-  const [stateDistribution, setStateDistribution] = useState<any[]>([])
+  const [chartData, setChartData] = useState<{ date: string; leads: number }[]>([])
+  const [typeDistribution, setTypeDistribution] = useState<{ name: string; value: number }[]>([])
+  const [stateDistribution, setStateDistribution] = useState<{ name: string; value: number }[]>([])
+  const [propCount, setPropCount] = useState(0)
+
+  useEffect(() => {
+    supabase
+      .from("propiedades")
+      .select("id", { count: "exact", head: true })
+      .eq("activa", true)
+      .then(({ count }) => setPropCount(count ?? 0))
+  }, [])
 
   useEffect(() => {
     if (!leads || leads.length === 0) return
@@ -71,7 +82,7 @@ function DashboardContent() {
     setChartData(leadsByDay)
 
     // Type distribution
-    const typeCount = leads.reduce((acc: any, lead) => {
+    const typeCount = leads.reduce((acc: Record<string, number>, lead) => {
       acc[lead.tipo] = (acc[lead.tipo] || 0) + 1
       return acc
     }, {})
@@ -84,7 +95,7 @@ function DashboardContent() {
     )
 
     // State distribution
-    const stateCount = leads.reduce((acc: any, lead) => {
+    const stateCount = leads.reduce((acc: Record<string, number>, lead) => {
       acc[lead.estado] = (acc[lead.estado] || 0) + 1
       return acc
     }, {})
@@ -142,6 +153,60 @@ function DashboardContent() {
               value={todayLeads}
               color="bg-purple-100 text-purple-800"
             />
+          </div>
+
+          {/* Acciones Rápidas */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            <Link href="/admin/propiedades">
+              <Card className="p-5 cursor-pointer hover:shadow-md transition-all hover:-translate-y-0.5 group">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-blue-100 rounded-xl">
+                      <Building2 className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm">Gestionar Propiedades</p>
+                      <p className="text-xs text-muted-foreground">{propCount} activas</p>
+                    </div>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                </div>
+              </Card>
+            </Link>
+
+            <Link href="/admin/propiedades">
+              <Card className="p-5 cursor-pointer hover:shadow-md transition-all hover:-translate-y-0.5 group border-dashed">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-green-100 rounded-xl">
+                      <Building2 className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm">Nueva Propiedad</p>
+                      <p className="text-xs text-muted-foreground">Añadir al inventario</p>
+                    </div>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                </div>
+              </Card>
+            </Link>
+
+            <Link href="/admin/leads">
+              <Card className="p-5 cursor-pointer hover:shadow-md transition-all hover:-translate-y-0.5 group">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-purple-100 rounded-xl">
+                      <Users className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm">Ver Leads</p>
+                      <p className="text-xs text-muted-foreground">{totalLeads} en total</p>
+                    </div>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                </div>
+              </Card>
+            </Link>
           </div>
 
           {/* Charts */}

@@ -1,12 +1,13 @@
 "use client"
 
 import type { Lead } from "@/lib/lead-utils"
+import { getScoreGradient, getScoreLabelFull } from "@/lib/lead-utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { 
-  Eye, 
-  Trash2, 
-  Mail, 
+import {
+  Eye,
+  Trash2,
+  Mail,
   Phone,
   TrendingUp,
   AlertCircle,
@@ -30,7 +31,7 @@ export function LeadsTable({ leads, onViewDetail, onDelete }: LeadsTableProps) {
         return "bg-blue-100 text-blue-800 border-blue-200"
       case "Vendedor":
         return "bg-green-100 text-green-800 border-green-200"
-      case "Arriendo":
+      case "Alquiler":
         return "bg-purple-100 text-purple-800 border-purple-200"
       default:
         return "bg-gray-100 text-gray-800 border-gray-200"
@@ -43,7 +44,7 @@ export function LeadsTable({ leads, onViewDetail, onDelete }: LeadsTableProps) {
         return "🛒"
       case "Vendedor":
         return "💰"
-      case "Arriendo":
+      case "Alquiler":
         return "🔑"
       default:
         return "📋"
@@ -71,24 +72,12 @@ export function LeadsTable({ leads, onViewDetail, onDelete }: LeadsTableProps) {
     }
   }
 
-  const getScoreColor = (score: number) => {
-    if (score >= 70) return "from-green-500 to-emerald-600"
-    if (score >= 40) return "from-yellow-500 to-orange-600"
-    return "from-red-500 to-rose-600"
-  }
-
-  const getScoreLabel = (score: number) => {
-    if (score >= 70) return { icon: "🔥", label: "Caliente" }
-    if (score >= 40) return { icon: "☀️", label: "Tibio" }
-    return { icon: "❄️", label: "Frío" }
-  }
-
   const getUrgencyIcon = (lead: Lead) => {
     const urgency = lead.urgencia || lead.urgenciaVenta
     if (!urgency) return { icon: "", text: "-", color: "text-gray-400" }
-    if (urgency.includes("1 mes") || urgency.includes("Urgente")) 
+    if (urgency.includes("1 mes") || urgency.includes("Urgente"))
       return { icon: "⚡", text: "Alta", color: "text-red-600 font-semibold" }
-    if (urgency.includes("1-3")) 
+    if (urgency.includes("1-3"))
       return { icon: "⏱️", text: "Media", color: "text-yellow-600 font-medium" }
     return { icon: "📅", text: "Baja", color: "text-green-600" }
   }
@@ -173,7 +162,7 @@ export function LeadsTable({ leads, onViewDetail, onDelete }: LeadsTableProps) {
           >
             {leads.map((lead) => {
               const urgency = getUrgencyIcon(lead)
-              const scoreInfo = getScoreLabel(lead.score)
+              const scoreInfo = getScoreLabelFull(lead.score)
               
               return (
                 <motion.tr
@@ -251,7 +240,7 @@ export function LeadsTable({ leads, onViewDetail, onDelete }: LeadsTableProps) {
                             fill="none"
                             strokeDasharray={`${2 * Math.PI * 20}`}
                             strokeDashoffset={`${2 * Math.PI * 20 * (1 - lead.score / 100)}`}
-                            className={`bg-gradient-to-r ${getScoreColor(lead.score)} text-green-500`}
+                            className={`bg-gradient-to-r ${getScoreGradient(lead.score)} text-green-500`}
                             strokeLinecap="round"
                           />
                         </svg>

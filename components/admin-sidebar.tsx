@@ -2,18 +2,19 @@
 
 import { useRouter, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { 
-  LayoutDashboard, 
-  Users, 
-  Plus, 
-  Settings, 
-  LogOut, 
-  Menu, 
+import {
+  LayoutDashboard,
+  Users,
+  Plus,
+  Settings,
+  LogOut,
+  Menu,
   X,
   ChevronRight,
   Home,
   BarChart3,
-  Bell
+  Bell,
+  Building2,
 } from "lucide-react"
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -26,6 +27,7 @@ export function AdminSidebar() {
 
   const menuItems = [
     { label: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard, badge: null },
+    { label: "Propiedades", href: "/admin/propiedades", icon: Building2, badge: null },
     { label: "Leads", href: "/admin/leads", icon: Users, badge: "12" },
     { label: "Nuevo Lead", href: "/admin/leads/new", icon: Plus, badge: null },
     { label: "Estadísticas", href: "/admin/stats", icon: BarChart3, badge: null },

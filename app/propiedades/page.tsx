@@ -2,10 +2,9 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { client } from '@/sanity/lib/client'
-import { getAllProperties} from '@/sanity/lib/queries'
+import { getAllProperties } from '@/lib/properties'
 import { PropertyGrid } from '@/components/PropertyGrid'
-import { Property, PropertyType, PropertyStatus } from '@/types/property'
+import { Property, PropertyStatus } from '@/types/property'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -16,14 +15,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import Image from 'next/image'
-import { 
-  Filter, 
-  X,
-  Home as HomeIcon,
-  MapPin
-} from 'lucide-react'
+import { Filter, X, MapPin } from 'lucide-react'
 
-const propertyTypes: { value: PropertyType | 'all'; label: string }[] = [
+const propertyTypes: { value: string; label: string }[] = [
   { value: 'all', label: 'Todos' },
   { value: 'piso', label: 'Piso' },
   { value: 'casa', label: 'Casa' },
@@ -37,7 +31,7 @@ const propertyTypes: { value: PropertyType | 'all'; label: string }[] = [
 
 const statusOptions: { value: PropertyStatus | 'all'; label: string }[] = [
   { value: 'all', label: 'Todos' },
-  { value: 'en venta', label: 'En Venta' },
+  { value: 'venta', label: 'En Venta' },
   { value: 'alquiler', label: 'Alquiler' },
 ]
 
@@ -58,7 +52,7 @@ function PropertiesContent() {
   const [properties, setProperties] = useState<Property[]>([])
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedType, setSelectedType] = useState<PropertyType | 'all'>('all')
+  const [selectedType, setSelectedType] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<PropertyStatus | 'all'>('all')
   const [selectedZona, setSelectedZona] = useState<string>('todas')
   const [precioMax, setPrecioMax] = useState<string>('sin-limite')
@@ -75,29 +69,27 @@ function PropertiesContent() {
     const precioMaxParam = searchParams.get('precioMax')
     const operacion = searchParams.get('operacion')
 
-    // Solo establecer filtros si existen en la URL y no son "todos"
     if (tipo && tipo !== 'todos') {
-      setSelectedType(tipo as PropertyType)
+      setSelectedType(tipo)
     } else {
       setSelectedType('all')
     }
-    
+
     if (zona && zona !== 'todas') {
       setSelectedZona(zona)
     } else {
       setSelectedZona('todas')
     }
-    
+
     if (precioMaxParam && precioMaxParam !== 'sin-limite') {
       setPrecioMax(precioMaxParam)
     } else {
       setPrecioMax('sin-limite')
     }
-    
-    // Solo establecer estado si operacion existe y no es "todos"
+
     if (operacion && operacion !== 'todos') {
       if (operacion === 'comprar') {
-        setSelectedStatus('en venta')
+        setSelectedStatus('venta')
       } else if (operacion === 'alquilar') {
         setSelectedStatus('alquiler')
       }
@@ -110,11 +102,11 @@ function PropertiesContent() {
     async function fetchProperties() {
       try {
         setLoading(true)
-        const data = await client.fetch<Property[]>(getAllProperties)
+        const data = await getAllProperties()
         setProperties(data)
         setFilteredProperties(data)
-      } catch (error) {
-        console.error('Error fetching properties:', error)
+      } catch {
+        // Error silenciado — el estado vacío ya indica fallo al usuario
       } finally {
         setLoading(false)
       }
@@ -125,29 +117,27 @@ function PropertiesContent() {
   useEffect(() => {
     let filtered = [...properties]
 
-    // Solo filtrar si el valor no es "all"
     if (selectedType && selectedType !== 'all') {
-      filtered = filtered.filter((prop) => prop.propertyType === selectedType)
+      filtered = filtered.filter((prop) => prop.categoria === selectedType)
     }
 
-    // Solo filtrar si el estado no es "all"
     if (selectedStatus && selectedStatus !== 'all') {
-      filtered = filtered.filter((prop) => prop.status === selectedStatus)
+      filtered = filtered.filter((prop) => prop.tipo === selectedStatus)
     }
 
     if (selectedZona && selectedZona !== 'todas') {
-      filtered = filtered.filter((prop) => 
-        prop.location?.toLowerCase().includes(selectedZona.toLowerCase())
+      filtered = filtered.filter((prop) =>
+        prop.ubicacion?.toLowerCase().includes(selectedZona.toLowerCase()) ||
+        prop.ciudad?.toLowerCase().includes(selectedZona.toLowerCase())
       )
     }
 
-    // Solo filtrar si hay un precio máximo y no es "sin-limite"
     if (precioMax && precioMax !== 'sin-limite') {
       if (precioMax === '300000') {
-        filtered = filtered.filter((prop) => prop.price >= 300000)
+        filtered = filtered.filter((prop) => prop.precio >= 300000)
       } else {
         const precioMaxNum = parseInt(precioMax)
-        filtered = filtered.filter((prop) => prop.price <= precioMaxNum)
+        filtered = filtered.filter((prop) => prop.precio <= precioMaxNum)
       }
     }
 
@@ -161,8 +151,8 @@ function PropertiesContent() {
     setPrecioMax('sin-limite')
   }
 
-  const activeFiltersCount = 
-    (selectedType !== 'all' ? 1 : 0) + 
+  const activeFiltersCount =
+    (selectedType !== 'all' ? 1 : 0) +
     (selectedStatus !== 'all' ? 1 : 0) +
     (selectedZona !== 'todas' ? 1 : 0) +
     (precioMax && precioMax !== 'sin-limite' ? 1 : 0)
@@ -178,7 +168,7 @@ function PropertiesContent() {
           priority
         />
         <div className="absolute inset-0 bg-gradient-to-r from-green-900/85 to-emerald-800/75" />
-        
+
         <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <div>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-1 sm:mb-2">
@@ -188,7 +178,7 @@ function PropertiesContent() {
               Explora nuestra selección de propiedades disponibles
             </p>
           </div>
-          
+
           <div className="hidden md:block">
             <div className="relative w-24 h-24 bg-white rounded-xl p-2 shadow-lg">
               <Image
@@ -231,12 +221,7 @@ function PropertiesContent() {
                 Filtros
               </h2>
               {activeFiltersCount > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearFilters}
-                  className="gap-2"
-                >
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-2">
                   <X className="w-4 h-4" />
                   Limpiar filtros
                 </Button>
@@ -245,13 +230,8 @@ function PropertiesContent() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Tipo de Propiedad
-                </label>
-                <Select
-                  value={selectedType}
-                  onValueChange={(value) => setSelectedType(value as PropertyType | 'all')}
-                >
+                <label className="block text-sm font-medium mb-2">Tipo de Propiedad</label>
+                <Select value={selectedType} onValueChange={setSelectedType}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Seleccionar tipo" />
                   </SelectTrigger>
@@ -266,15 +246,13 @@ function PropertiesContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Estado
-                </label>
+                <label className="block text-sm font-medium mb-2">Operación</label>
                 <Select
                   value={selectedStatus}
                   onValueChange={(value) => setSelectedStatus(value as PropertyStatus | 'all')}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Seleccionar estado" />
+                    <SelectValue placeholder="Seleccionar operación" />
                   </SelectTrigger>
                   <SelectContent>
                     {statusOptions.map((status) => (
@@ -291,10 +269,7 @@ function PropertiesContent() {
                   <MapPin className="w-4 h-4 text-primary" />
                   Zonas
                 </label>
-                <Select
-                  value={selectedZona}
-                  onValueChange={setSelectedZona}
-                >
+                <Select value={selectedZona} onValueChange={setSelectedZona}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Seleccionar zona" />
                   </SelectTrigger>
@@ -331,7 +306,7 @@ function PropertiesContent() {
                 )}
                 {selectedStatus !== 'all' && (
                   <Badge variant="secondary" className="gap-1">
-                    Estado: {statusOptions.find((s) => s.value === selectedStatus)?.label}
+                    Operación: {statusOptions.find((s) => s.value === selectedStatus)?.label}
                     <button
                       onClick={() => setSelectedStatus('all')}
                       className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
@@ -342,7 +317,9 @@ function PropertiesContent() {
                 )}
                 {selectedZona !== 'todas' && (
                   <Badge variant="secondary" className="gap-1">
-                    Zona: {zonas.find((z) => z.value === selectedZona)?.label || selectedZona.charAt(0).toUpperCase() + selectedZona.slice(1)}
+                    Zona:{' '}
+                    {zonas.find((z) => z.value === selectedZona)?.label ||
+                      selectedZona.charAt(0).toUpperCase() + selectedZona.slice(1)}
                     <button
                       onClick={() => setSelectedZona('todas')}
                       className="ml-1 hover:bg-secondary-foreground/20 rounded-full p-0.5"
@@ -386,7 +363,13 @@ function PropertiesContent() {
 
 export default function PropertiesPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center">Cargando...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          Cargando...
+        </div>
+      }
+    >
       <PropertiesContent />
     </Suspense>
   )

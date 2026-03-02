@@ -68,10 +68,11 @@ export function LeadForm() {
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target as any
+    const { name, value } = e.target
+    const isCheckbox = (e.target as HTMLInputElement).type === "checkbox"
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      [name]: isCheckbox ? (e.target as HTMLInputElement).checked : value,
     }))
     // Limpiar error cuando el usuario empieza a escribir
     if (errors[name]) {
@@ -206,7 +207,7 @@ export function LeadForm() {
       }
   
       const response = await fetch(
-        "https://primary-production-a806.up.railway.app/webhook-test/8669bb8a-bb73-4726-b8db-ac3a7e92a029",
+        process.env.NEXT_PUBLIC_WEBHOOK_LEAD_URL!,
         {
           method: "POST",
           headers: {
@@ -256,7 +257,6 @@ export function LeadForm() {
         throw new Error("Error en la respuesta del servidor")
       }
     } catch (error) {
-      console.error("Error al enviar:", error)
       toast({
         title: "❌ Error",
         description: "Ocurrió un error al enviar la solicitud. Por favor, intenta de nuevo.",

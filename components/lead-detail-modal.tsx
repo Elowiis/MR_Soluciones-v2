@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import type { Lead } from "@/lib/lead-utils"
+import { getScoreGradient, getScoreTextColor, getScoreLabelFull } from "@/lib/lead-utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { 
@@ -62,17 +63,10 @@ export function LeadDetailModal({ lead, isOpen, onClose, onSave }: LeadDetailMod
     }
   }
 
-  const scoreColor =
-    formData!.score >= 70 ? "from-green-500 to-emerald-600" : 
-    formData!.score >= 40 ? "from-yellow-500 to-orange-600" : 
-    "from-red-500 to-rose-600"
-  
-  const scoreTextColor =
-    formData!.score >= 70 ? "text-green-600" : 
-    formData!.score >= 40 ? "text-yellow-600" : 
-    "text-red-600"
-  
-  const scoreLabel = formData!.score >= 70 ? "🔥 Caliente" : formData!.score >= 40 ? "☀️ Tibio" : "❄️ Frío"
+  const scoreColor = getScoreGradient(formData!.score)
+  const scoreTextColor = getScoreTextColor(formData!.score)
+  const { icon: scoreLabelIcon, label: scoreLabelText } = getScoreLabelFull(formData!.score)
+  const scoreLabel = `${scoreLabelIcon} ${scoreLabelText}`
 
   const overlayVariants = {
     hidden: { opacity: 0 },
@@ -155,7 +149,7 @@ export function LeadDetailModal({ lead, isOpen, onClose, onSave }: LeadDetailMod
                 <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold">
                   {formData?.tipo === "Comprador" && "🛒"}
                   {formData?.tipo === "Vendedor" && "💰"}
-                  {formData?.tipo === "Arriendo" && "🔑"}
+                  {formData?.tipo === "Alquiler" && "🔑"}
                   {formData?.tipo}
                 </span>
               </div>
@@ -431,7 +425,7 @@ export function LeadDetailModal({ lead, isOpen, onClose, onSave }: LeadDetailMod
 }
 
 // Helper Component
-function InfoItem({ icon: Icon, label, value }: { icon: any, label: string, value?: string }) {
+function InfoItem({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value?: string }) {
   return (
     <div className="flex items-start gap-3 py-2 border-b border-gray-100 last:border-0">
       <Icon className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
