@@ -177,19 +177,16 @@ function PropiedadesContent() {
     const errors: string[] = []
 
     for (const file of Array.from(files)) {
-      const ext = file.name.split(".").pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-      const { error } = await supabase.storage
-        .from("propiedades")
-        .upload(fileName, file, { upsert: false })
+      const formData = new FormData()
+      formData.append("file", file)
 
-      if (error) {
-        errors.push(`${file.name}: ${error.message}`)
+      const res = await fetch("/api/upload", { method: "POST", body: formData })
+      const data = await res.json()
+
+      if (!res.ok) {
+        errors.push(`${file.name}: ${data.error ?? "Error desconocido"}`)
       } else {
-        const { data: publicData } = supabase.storage
-          .from("propiedades")
-          .getPublicUrl(fileName)
-        newUrls.push(publicData.publicUrl)
+        newUrls.push(data.url)
       }
     }
 
